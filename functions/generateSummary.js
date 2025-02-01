@@ -14,19 +14,16 @@ export default async (req,res) => {
 
     const data = await response.json();
 
-    if (data && data.generateSummary) {
-        return res.json({
-            summary: data.generateSummary.summary,
-            title: data.generateSummary.title,
-        });
-      } else {
-        // Handle case where n8n does not return the expected data
-        throw new Error('Invalid response from n8n');
-      }
-  } catch (error) {
-    return res.status(500).json({
-        error: error.message,
-        details: error.stack,
+    if (data && data.summary && data.title) {
+      return res.json({
+        summary: data.summary,
+        title: data.title,
       });
+    } else {
+      // Handle case where n8n does not return the expected data
+      throw new Error('Invalid response from n8n');
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 };
