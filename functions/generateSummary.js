@@ -14,10 +14,10 @@ export default async (req,res) => {
 
     const data = await response.json();
 
-    if (data && data.summary && data.title) {
+    if (data && data.generateSummary) {
         return res.json({
-          summary: data.summary,
-          title: data.title,
+            summary: data.generateSummary.summary,
+            title: data.generateSummary.title,
         });
       } else {
         // Handle case where n8n does not return the expected data
