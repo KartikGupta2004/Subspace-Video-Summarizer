@@ -6,7 +6,6 @@ import { Download, Save, RefreshCcw } from "lucide-react"; // Import the Downloa
 import { useUserId } from '@nhost/react';
 import { toast } from 'react-hot-toast';
 import { gql, useMutation } from '@apollo/client';
-import { fetchVideoMetadata, fetchResummarizedData } from "../../functions/n8n-webhook";
 
 const getHighestResolutionThumbnail = (thumbnails) =>
   thumbnails?.reduce((highest, current) =>
@@ -77,26 +76,23 @@ export function Summary() {
       console.error("GraphQL error:", err);
     }
   };
-
+  
   const handleResummarize = async () => {
     setIsResummarizing(true);
     try {
-      // const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ videoUrl: ytUrl }),
-      // });
+      const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoUrl: ytUrl }),
+      });
 
-      // if (!response.ok) {
-      //   const errorDetails = await response.json();
-      //   console.error("Error response from server:", errorDetails);
-      //   throw new Error(`Failed to fetch data: ${response.statusText}`);
-      // }
+      if (!response.ok) {
+        const errorDetails = await response.json();
+        console.error("Error response from server:", errorDetails);
+        throw new Error(`Failed to fetch data: ${response.statusText}`);
+      }
 
-      // const data = await response.json();
-      // const newSummary = data.summary;
-
-      const data = await fetchResummarizedData(ytUrl); // Call the n8n service function
+      const data = await response.json();
       const newSummary = data.summary;
 
       setSummary(newSummary); // Update the local state with the new summary
@@ -144,21 +140,21 @@ export function Summary() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
-        //   method: "POST",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify({ videoUrl }),
-        // });
+        const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ videoUrl }),
+        });
 
-        // if (!response.ok) {
-        //   const errorDetails = await response.json();
-        //   console.error("Error response from server:", errorDetails);
-        //   throw new Error(`Failed to fetch metadata: ${response.statusText}`);
-        // }
+        if (!response.ok) {
+          const errorDetails = await response.json();
+          console.error("Error response from server:", errorDetails);
+          throw new Error(`Failed to fetch metadata: ${response.statusText}`);
+        }
 
-        // const data = await response.json();
-        // console.log("Fetched data:", data);
-        const data = await fetchVideoMetadata(videoUrl);
+        const data = await response.json();
+        console.log("Fetched data:", data);
+        // const data = await fetchVideoMetadata(videoUrl);
         setMetadata(data);
         setSummary(data.summary);
         setTitle(data.title);

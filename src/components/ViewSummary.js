@@ -6,7 +6,6 @@ import showdown from 'showdown'; // For markdown to HTML conversion
 import { Download, RefreshCcw } from 'lucide-react'; // Icons for download actions
 import { useUserId } from '@nhost/react';
 import Spinner from './Spinner';
-import { fetchVideoMetadata, fetchResummarizedData } from "../../functions/n8n-webhook";
 
 const GET_SUMMARY = gql`
   query GetSummary($id: uuid!) {
@@ -82,21 +81,19 @@ export function SummaryPage() {
   const handleResummarize = async () => {
     setIsResummarizing(true); // Set loading state
     try {
-      // const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ videoUrl }),
-      // });
+      const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoUrl }),
+      });
 
-      // if (!response.ok) {
-      //   const errorDetails = await response.json();
-      //   console.error('Error response from server:', errorDetails);
-      //   throw new Error(`Failed to fetch data: ${response.statusText}`);
-      // }
+      if (!response.ok) {
+        const errorDetails = await response.json();
+        console.error('Error response from server:', errorDetails);
+        throw new Error(`Failed to fetch data: ${response.statusText}`);
+      }
 
-      // const data = await response.json();
-
-      const data = await fetchResummarizedData(videoUrl);
+      const data = await response.json();
       const newSummary = data.summary;
       setSummary(newSummary); // Update the local state with the new summary
       toast.success('Summary updated!');
