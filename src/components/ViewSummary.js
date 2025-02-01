@@ -34,6 +34,20 @@ const UPDATE_SUMMARY_MUTATION = gql`
   }
 `;
 
+const GENERATE_SUMMARY_MUTATION = gql`
+  mutation GenerateSummary($videoUrl: String!) {
+    generateSummary(videoUrl: $videoUrl) {
+      summary
+      title
+      thumbnails {
+      url
+      width
+      height
+    }
+    }
+  }
+`;
+
 export function SummaryPage() {
   const { id } = useParams();
   const userId = useUserId();
@@ -53,6 +67,8 @@ export function SummaryPage() {
   const [updateSummary] = useMutation(UPDATE_SUMMARY_MUTATION, {
     refetchQueries: [{ query: GET_SUMMARY, variables: { id } }],
   });
+
+  const [generateSummary] = useMutation(GENERATE_SUMMARY_MUTATION);
 
   const converter = new showdown.Converter();
 
@@ -81,30 +97,32 @@ export function SummaryPage() {
   const handleResummarize = async () => {
     setIsResummarizing(true); // Set loading state
     try {
-      const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoUrl }),
-      });
+      // const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ videoUrl }),
+      // });
 
-      if (!response.ok) {
-        const errorDetails = await response.json();
-        console.error('Error response from server:', errorDetails);
-        throw new Error(`Failed to fetch data: ${response.statusText}`);
-      }
+      // if (!response.ok) {
+      //   const errorDetails = await response.json();
+      //   console.error('Error response from server:', errorDetails);
+      //   throw new Error(`Failed to fetch data: ${response.statusText}`);
+      // }
 
-      const data = await response.json();
-      const newSummary = data.summary;
-      setSummary(newSummary); // Update the local state with the new summary
+      const { data } = await generateSummary({ variables: { videoUrl: ytUrl } });
+
+      // const data = await response.json();
+      // const newSummary = data.summary;
+      setSummary(data.generateSummary.summary);
+      setTitle(data.generateSummary.title);
       toast.success('Summary updated!');
 
-      // Save the updated summary to the database
-      const { data: updatedSummary } = await updateSummary({
+      await updateSummary({
         variables: {
           id,
           object: {
             title,
-            summary: newSummary,
+            summary,
             video_url: ytUrl,
             thumbnail_url: thumbnail.url,
           },
@@ -118,8 +136,10 @@ export function SummaryPage() {
 
       toast.success('Summary saved to the database!');
     } catch (error) {
-      toast.error('Failed to resummarize or save the summary.');
-      console.error('Error during resummarization:', error);
+      if(!summary){
+        toast.error('Failed to resummarize or save the summary.');
+      }
+      // console.error('Error during resummarization:', error);
     } finally {
       setIsResummarizing(false); // Reset loading state
     }
@@ -135,10 +155,41 @@ export function SummaryPage() {
     window.URL.revokeObjectURL(url);
   };
 
+  const handleGoBack  = ()=>{
+    navigate('/history');
+  }
+
   if (loading) return <div>Loading... <Spinner /></div>;
   if (!metadata) return <div>Summary not found.</div>;
 
   return (
+    <>
+    <div className="flex fixed top-28 left-0 z-50 p-4">
+    <button onClick={handleGoBack }
+      className="bg-white text-center w-48 rounded-2xl h-14 relative text-black text-xl font-semibold group"
+      type="button"
+    >
+      <div className="bg-gray-400 rounded-xl h-12 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[184px] z-10 duration-500">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1024 1024"
+          height="25px"
+          width="25px"
+        >
+          <path
+            d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
+            fill="#000000"
+          />
+          <path
+            d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+            fill="#000000"
+          />
+        </svg>
+      </div>
+      <p className="translate-x-2">Go Back</p>
+    </button>
+    </div>
+    
     <div className="max-w-4xl mx-auto space-y-8 p-6">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold tracking-tight text-gray-900">{title}</h1>
@@ -206,16 +257,7 @@ export function SummaryPage() {
 
       {/* No Data Section */}
       {!summary && <div className="text-gray-500 text-center">No summary available.</div>}
-
-      {/* Back Button */}
-      <div className="mt-6">
-        <button
-          onClick={() => navigate('/history')}
-          className="px-4 py-2 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700"
-        >
-          Back to History
-        </button>
-      </div>
     </div>
+    </>
   );
 }

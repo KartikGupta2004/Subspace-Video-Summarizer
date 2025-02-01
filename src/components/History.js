@@ -57,10 +57,41 @@ export function History() {
     }
   }, [data]);
 
+  const handleGoBack  = ()=>{
+    navigate('/');
+  }
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-600">{error.message}</div>;
 
   return (
+    <>
+    <div className="flex fixed top-28 left-0 z-50 p-4">
+    <button onClick={handleGoBack }
+      className="bg-white text-center w-48 rounded-2xl h-14 relative text-black text-xl font-semibold group"
+      type="button"
+    >
+      <div className="bg-gray-400 rounded-xl h-12 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[184px] z-10 duration-500">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1024 1024"
+          height="25px"
+          width="25px"
+        >
+          <path
+            d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
+            fill="#000000"
+          />
+          <path
+            d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+            fill="#000000"
+          />
+        </svg>
+      </div>
+      <p className="translate-x-2">Go Back</p>
+    </button>
+    </div>
+
     <div className="max-w-4xl mx-auto space-y-8 p-6">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold tracking-tight text-gray-900">Your Summary History</h1>
@@ -105,5 +136,6 @@ export function History() {
         </div>
       )}
     </div>
+    </>
   );
 }

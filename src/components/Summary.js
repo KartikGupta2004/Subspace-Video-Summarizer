@@ -55,9 +55,7 @@ export function Summary() {
 
   useEffect(() => {
     if (metadata?.thumbnails) {
-      const highestThumbnail = getHighestResolutionThumbnail(metadata.thumbnails.map(thumbnail => (
-        <img key={thumbnail.url} src={thumbnail.url} width={thumbnail.width} height={thumbnail.height} alt="Thumbnail" />
-      )));
+      const highestThumbnail = getHighestResolutionThumbnail(metadata.thumbnails);
       setThumbnail(highestThumbnail);
     }
   }, [metadata]);
@@ -91,7 +89,7 @@ export function Summary() {
       }
     } catch (err) {
       toast.error("Failed to save summary. Please try again.");
-      console.error("GraphQL error:", err);
+      // console.error("GraphQL error:", err);
     }
   };
   
@@ -134,8 +132,10 @@ export function Summary() {
         },
       });
     } catch (error) {
+      if(!summary){
       toast.error("Failed to resummarize the summary.");
-      console.error("Error during resummarization:", error);
+      }
+      // console.error("Error during resummarization:", error);
     } finally {
       setIsResummarizing(false);
     }
@@ -153,7 +153,7 @@ export function Summary() {
   };
 
   useEffect(() => {
-    console.log("videoUrl:", videoUrl);
+    // console.log("videoUrl:", videoUrl);
 
     if (!videoUrl) {
       navigate("/"); // Redirect if no YouTube URL was provided
@@ -178,7 +178,7 @@ export function Summary() {
         // const data = await response.json();
         const { data } = await generateSummary({ variables: { videoUrl } });
 
-        console.log("Fetched data:", data);
+        // console.log("Fetched data:", data);
         // const data = await fetchVideoMetadata(videoUrl);
         setMetadata(data.generateSummary);
         // setSummary(data.summary);
@@ -188,8 +188,10 @@ export function Summary() {
         setYtUrl(videoUrl);
         setError("");
       } catch (err) {
+        if(!summary){
         toast.error("Failed to fetch video data. Please try again.");
-        console.error("Fetch error:", err);
+        // console.error("Fetch error:", err);
+        }
       } finally {
         setLoading(false);
       }
@@ -197,12 +199,43 @@ export function Summary() {
 
     if(!metadata && videoUrl)
     fetchData();
-  }, [videoUrl, navigate]);
+  }, [videoUrl, metadata, navigate]);
 
+  const handleGoBack  = ()=>{
+    navigate('/');
+  }
+  
   if (loading) return <div className="flex justify-center items-center m-auto">Summarizing... <Spinner className="ml-2" /></div>;
   if (error) return <div className="text-red-600">{error}</div>;
 
   return (
+    <>
+    <div className="flex fixed top-28 left-0 z-50 p-4">
+    <button onClick={handleGoBack }
+      className="bg-white text-center w-48 rounded-2xl h-14 relative text-black text-xl font-semibold group"
+      type="button"
+    >
+      <div className="bg-gray-400 rounded-xl h-12 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[184px] z-10 duration-500">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1024 1024"
+          height="25px"
+          width="25px"
+        >
+          <path
+            d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
+            fill="#000000"
+          />
+          <path
+            d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+            fill="#000000"
+          />
+        </svg>
+      </div>
+      <p className="translate-x-2">Go Back</p>
+    </button>
+    </div>
+
     <div className="max-w-4xl mx-auto space-y-8 p-6">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold tracking-tight text-gray-900">Video Summary</h1>
@@ -260,5 +293,6 @@ export function Summary() {
         <div className="text-gray-500 text-center">No data available.</div>
       )}
     </div>
+    </>
   );
 }
