@@ -16,8 +16,9 @@ export default async (req,res) => {
     const data = await response.json();
 
     return res.json({
-      summary: data.summary,
-      title: data.title,
+        summary: data.summary,
+        title: data.title,
+        thumbnails: data.thumbnails,
     });
   } catch (error) {
     return res.status(500).json({ error: error.message });
