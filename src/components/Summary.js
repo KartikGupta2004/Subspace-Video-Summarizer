@@ -25,6 +25,11 @@ const GENERATE_SUMMARY_MUTATION = gql`
     generateSummary(videoUrl: $videoUrl) {
       summary
       title
+      thumbnails {
+      url
+      width
+      height
+    }
     }
   }
 `;
