@@ -1,5 +1,6 @@
 export default async (req,res) => {
   try {
+    console.log('Request',req.body);
     const { videoUrl } = req.body.input; // Get video URL from the request
 
     // Call n8n webhook securely

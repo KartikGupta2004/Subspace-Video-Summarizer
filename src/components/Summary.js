@@ -20,6 +20,15 @@ const INSERT_SUMMARY_MUTATION = gql`
   }
 `;
 
+const GENERATE_SUMMARY_MUTATION = gql`
+  mutation GenerateSummary($videoUrl: String!) {
+    generateSummary(videoUrl: $videoUrl) {
+      summary
+      title
+    }
+  }
+`;
+
 export function Summary() {
   const userId = useUserId();
   const location = useLocation();
@@ -48,6 +57,8 @@ export function Summary() {
 
   // Apollo mutation hook
   const [insertSummary] = useMutation(INSERT_SUMMARY_MUTATION);
+
+  const [generateSummary] = useMutation(GENERATE_SUMMARY_MUTATION);
 
   const handleSave = async () => {
     if (!title || !summary || !ytUrl) {
@@ -80,22 +91,27 @@ export function Summary() {
   const handleResummarize = async () => {
     setIsResummarizing(true);
     try {
-      const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ videoUrl: ytUrl }),
-      });
+      // const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ videoUrl: ytUrl }),
+      // });
 
-      if (!response.ok) {
-        const errorDetails = await response.json();
-        console.error("Error response from server:", errorDetails);
-        throw new Error(`Failed to fetch data: ${response.statusText}`);
-      }
+      // if (!response.ok) {
+      //   const errorDetails = await response.json();
+      //   console.error("Error response from server:", errorDetails);
+      //   throw new Error(`Failed to fetch data: ${response.statusText}`);
+      // }
+      // const data = await response.json();
 
-      const data = await response.json();
-      const newSummary = data.summary;
+      const { data } = await generateSummary({ variables: { videoUrl: ytUrl } });
+      
+      // const newSummary = data.summary;
 
-      setSummary(newSummary); // Update the local state with the new summary
+      // setSummary(newSummary); // Update the local state with the new summary
+      setSummary(data.generateSummary.summary);
+    setTitle(data.generateSummary.title);
+
       toast.success("Summary Resummarized!");
 
       // Save the updated summary to the database
@@ -103,7 +119,7 @@ export function Summary() {
         variables: {
           object: {
             title,
-            summary: newSummary,
+            summary,
             video_url: ytUrl,
             thumbnail_url: thumbnail?.url,
             user_id: userId,
@@ -140,24 +156,28 @@ export function Summary() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ videoUrl }),
-        });
+        // const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
+        //   method: "POST",
+        //   headers: { "Content-Type": "application/json" },
+        //   body: JSON.stringify({ videoUrl }),
+        // });
 
-        if (!response.ok) {
-          const errorDetails = await response.json();
-          console.error("Error response from server:", errorDetails);
-          throw new Error(`Failed to fetch metadata: ${response.statusText}`);
-        }
+        // if (!response.ok) {
+        //   const errorDetails = await response.json();
+        //   console.error("Error response from server:", errorDetails);
+        //   throw new Error(`Failed to fetch metadata: ${response.statusText}`);
+        // }
 
-        const data = await response.json();
+        // const data = await response.json();
+        const { data } = await generateSummary({ variables: { videoUrl } });
+
         console.log("Fetched data:", data);
         // const data = await fetchVideoMetadata(videoUrl);
-        setMetadata(data);
-        setSummary(data.summary);
-        setTitle(data.title);
+        setMetadata(data.generateSummary);
+        // setSummary(data.summary);
+        // setTitle(data.title);
+        setSummary(data.generateSummary.summary);
+        setTitle(data.generateSummary.title);
         setYtUrl(videoUrl);
         setError("");
       } catch (err) {
@@ -168,7 +188,7 @@ export function Summary() {
       }
     };
 
-    if(!metadata)
+    if(!metadata && videoUrl)
     fetchData();
   }, [videoUrl, navigate]);
 
