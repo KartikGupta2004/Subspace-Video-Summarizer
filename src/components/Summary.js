@@ -25,6 +25,11 @@ const GENERATE_SUMMARY_MUTATION = gql`
     generateSummary(videoUrl: $videoUrl) {
       summary
       title
+      thumbnails {
+      url
+      width
+      height
+    }
     }
   }
 `;
@@ -50,7 +55,9 @@ export function Summary() {
 
   useEffect(() => {
     if (metadata?.thumbnails) {
-      const highestThumbnail = getHighestResolutionThumbnail(metadata.thumbnails);
+      const highestThumbnail = getHighestResolutionThumbnail(metadata.thumbnails.map(thumbnail => (
+        <img key={thumbnail.url} src={thumbnail.url} width={thumbnail.width} height={thumbnail.height} alt="Thumbnail" />
+      )));
       setThumbnail(highestThumbnail);
     }
   }, [metadata]);
