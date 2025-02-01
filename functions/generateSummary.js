@@ -6,7 +6,7 @@ export default async (req,res) => {
     const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ videoUrl }),
+      body: JSON.stringify({ videoUrl: videoUrl }),
     });
 
     if (!response.ok) {
