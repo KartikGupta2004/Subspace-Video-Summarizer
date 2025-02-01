@@ -3,7 +3,7 @@ export default async (req,res) => {
     const { videoUrl } = req.body.input; // Get video URL from the request
     console.log('Webhook' , process.env.REACT_APP_N8N_WEBHOOK_URL)
     // Call n8n webhook securely
-    const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
+    const response = await fetch("https://n8n-dev.subspace.money/webhook-test/ytube", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ videoUrl: videoUrl }),
