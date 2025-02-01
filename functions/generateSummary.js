@@ -1,7 +1,6 @@
 export default async (req,res) => {
   try {
     const { videoUrl } = req.body.input; // Get video URL from the request
-    console.log('Webhook' , process.env.REACT_APP_N8N_WEBHOOK_URL)
     // Call n8n webhook securely
     const response = await fetch("https://n8n-dev.subspace.money/webhook-test/ytube", {
       method: 'POST',
@@ -15,11 +14,19 @@ export default async (req,res) => {
 
     const data = await response.json();
 
-    return res.json({
-      summary: data.summary,
-      title: data.title,
-    });
+    if (data && data.summary && data.title) {
+        return res.json({
+          summary: data.summary,
+          title: data.title,
+        });
+      } else {
+        // Handle case where n8n does not return the expected data
+        throw new Error('Invalid response from n8n');
+      }
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({
+        error: error.message,
+        details: error.stack,
+      });
   }
 };
