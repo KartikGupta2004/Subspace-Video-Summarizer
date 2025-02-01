@@ -1,9 +1,7 @@
 export default async (req,res) => {
   try {
-    console.log('Request',req.body.input);
     const { videoUrl } = req.body.input; // Get video URL from the request
-    console.log('Video URL', videoUrl);
-
+    console.log('Webhook' , process.env.REACT_APP_N8N_WEBHOOK_URL)
     // Call n8n webhook securely
     const response = await fetch(process.env.REACT_APP_N8N_WEBHOOK_URL, {
       method: 'POST',
