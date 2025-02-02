@@ -176,7 +176,12 @@ export function Summary() {
         // }
 
         // const data = await response.json();
+
+        console.log("Fetching summary for:", videoUrl); // Debug log
+
         const { data } = await generateSummary({ variables: { videoUrl } });
+
+        console.log("Response from GraphQL:", data); // Debug log
 
         // console.log("Fetched data:", data);
         // const data = await fetchVideoMetadata(videoUrl);
@@ -188,10 +193,11 @@ export function Summary() {
         setYtUrl(videoUrl);
         setError("");
       } catch (err) {
-        if(!summary){
-        toast.error("Failed to fetch video data. Please try again.");
-        // console.error("Fetch error:", err);
-        }
+        setTimeout(() => {
+          if (!summary) {
+            toast.error("Fetching summary is taking longer than expected.");
+          }
+        }, 20000); // 10 seconds timeout        
       } finally {
         setLoading(false);
       }
